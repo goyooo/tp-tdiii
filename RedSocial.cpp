@@ -6,7 +6,7 @@
 #include <string>
 using namespace std;
 
-RedSocial::RedSocial(){
+RedSocial::RedSocial():amistades_count(0){
 }
 
 const set<int> & RedSocial::usuarios() const{
@@ -45,16 +45,19 @@ void RedSocial::registrar_usuario(string alias, int id){
 }
 
 void RedSocial::eliminar_usuario(int id){
-    for(auto keys : amigos){
-        desamigar_usuarios(id, keys.first);
+    vector<string> amigos_a_eliminar;
+    for(auto amigo : amigos[id]){
+        amigos_a_eliminar.push_back(amigo);
     }
-    // elimino al usuario de la lista de users
+    for(auto keys : amigos_a_eliminar){
+        desamigar_usuarios(id, obtener_id(keys));
+    }
+    string alias = users[id];
+    alias_to_id.erase(alias);
     users.erase(id);
-    // elimino el id de la lista de ids
     ids.erase(id);
-    // elimino al usuario de la lista de amigos
     amigos.erase(id);
-    // elimino al usuario de la lista de amigos de los demas usuarios
+    conocidos.erase(id);
 }
 
 void RedSocial::amigar_usuarios(int id_A, int id_B){
@@ -62,7 +65,11 @@ void RedSocial::amigar_usuarios(int id_A, int id_B){
     string alias_B = users[id_B];
     amigos[id_A].insert(alias_B);
     amigos[id_B].insert(alias_A);
+
     this->amistades_count += 1;  
+
+    conocidos[id_A].insert(alias_B);
+    conocidos[id_B].insert(alias_A);
 }
 
 void RedSocial::desamigar_usuarios(int id_A, int id_B){
@@ -70,7 +77,12 @@ void RedSocial::desamigar_usuarios(int id_A, int id_B){
     string alias_B = users[id_B];
     amigos[id_A].erase(alias_B);
     amigos[id_B].erase(alias_A);
+
     this->amistades_count -= 1;
+
+    conocidos[id_A].erase(alias_B);
+    conocidos[id_B].erase(alias_A);
+
 }
 
 int RedSocial::obtener_id(string alias) const{
