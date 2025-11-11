@@ -26,6 +26,7 @@ class RedSocial{
     const std::set<std::string> & conocidos_del_usuario_mas_popular() const; // O(1)
 
   private:
+    void reconstruir_conocidos_de(int id_u);
     std::map<int, std::string> users;
     std::set<int> ids;
     std::map<int, std::set<std::string>> amigos;
@@ -33,7 +34,6 @@ class RedSocial{
     std::unordered_map<std::string, int> alias_to_id;
     std::map<int, set<std::string>> conocidos;
     int amistades_count;
-    std::set<std::string> conocidos_populares;
 };
 
 #endif
