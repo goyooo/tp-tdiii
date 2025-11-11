@@ -19,18 +19,8 @@ const set<string> & RedSocial::obtener_amigos(int id) const{
     return amigos.at(id);
 }
 
-const set<string> & RedSocial::obtener_conocidos(int id) const{
-    set<string> conocidos_de_id = {};
-    for(auto amigo : amigos.at(id)){
-        int id_amigo = obtener_id(amigo);
-        for(auto conocido_de_amigo : amigos.at(id_amigo)){
-            if(conocido_de_amigo != users.at(id) && amigos.at(id).find(conocido_de_amigo) == amigos.at(id).end()){
-                conocidos_de_id.insert(conocido_de_amigo);
-            }
-        }
-    }
-    
-    return conocidos_de_id;
+const set<string> & RedSocial::obtener_conocidos(int id) const{  
+    return conocidos.at(id);
 }
 
 int RedSocial::cantidad_amistades() const{
@@ -42,6 +32,57 @@ void RedSocial::registrar_usuario(string alias, int id){
     ids.insert(id);
     amigos[id] = {};
     alias_to_id[alias] = id;
+    conocidos[id] = {};
+}
+
+void RedSocial::amigar_usuarios(int id_A, int id_B){
+    string alias_A = users[id_A];
+    string alias_B = users[id_B];
+    amigos[id_A].insert(alias_B);
+    amigos[id_B].insert(alias_A);
+    this->amistades_count += 1;  
+
+    //A y B ya no pueden ser conocidos
+    conocidos[id_A].erase(alias_B);
+    conocidos[id_B].erase(alias_A);
+
+        for(auto amigo_de_B : amigos[id_B]){
+        if(amigo_de_B != alias_A){
+            int id_amigo_de_B = obtener_id(amigo_de_B);
+
+            //Si Y no es amigo directo de A, entonces son conocidos
+            if(amigos[id_A].count(amigo_de_B) == 0){
+                conocidos[id_A].insert(amigo_de_B);
+                conocidos[id_amigo_de_B].insert(alias_A);
+            }
+        }
+    }
+
+    //Actualizar conocidos de B con los amigos de A
+    for(auto amigo_de_A : amigos[id_A]){
+        if(amigo_de_A != alias_B){
+            int id_amigo_de_A = obtener_id(amigo_de_A);
+
+            //Si X no es amigo directo de B, entonces son conocidos
+            if(amigos[id_B].count(amigo_de_A) == 0){
+                conocidos[id_B].insert(amigo_de_A);
+                conocidos[id_amigo_de_A].insert(alias_B);
+            }
+        }
+    }
+}
+
+void RedSocial::desamigar_usuarios(int id_A, int id_B){
+    string alias_A = users[id_A];
+    string alias_B = users[id_B];
+    amigos[id_A].erase(alias_B);
+    amigos[id_B].erase(alias_A);
+
+    this->amistades_count -= 1;
+
+    conocidos[id_A].erase(alias_B);
+    conocidos[id_B].erase(alias_A);
+
 }
 
 void RedSocial::eliminar_usuario(int id){
@@ -60,39 +101,24 @@ void RedSocial::eliminar_usuario(int id){
     conocidos.erase(id);
 }
 
-void RedSocial::amigar_usuarios(int id_A, int id_B){
-    string alias_A = users[id_A];
-    string alias_B = users[id_B];
-    amigos[id_A].insert(alias_B);
-    amigos[id_B].insert(alias_A);
 
-    this->amistades_count += 1;  
 
-    conocidos[id_A].insert(alias_B);
-    conocidos[id_B].insert(alias_A);
-}
-
-void RedSocial::desamigar_usuarios(int id_A, int id_B){
-    string alias_A = users[id_A];
-    string alias_B = users[id_B];
-    amigos[id_A].erase(alias_B);
-    amigos[id_B].erase(alias_A);
-
-    this->amistades_count -= 1;
-
-    conocidos[id_A].erase(alias_B);
-    conocidos[id_B].erase(alias_A);
-
-}
 
 int RedSocial::obtener_id(string alias) const{
-    
     return alias_to_id.at(alias);
-    
 }
 
 const set<string> & RedSocial::conocidos_del_usuario_mas_popular() const{
-    set<string> conocidos_populares = {};
-    return conocidos_populares;
+    
+    int id_usuario = conocidos.rbegin()->first;
+    int compare = conocidos.rbegin()->second.size();
+    
+    for(auto ids : conocidos){
+        if(ids.first != id_usuario && ids.second.size() > compare){
+            id_usuario = ids.first;
+            compare = ids.second.size();
+        }
+    }
+    return conocidos.at(id_usuario);
 }
 
