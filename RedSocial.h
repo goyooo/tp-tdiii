@@ -48,11 +48,13 @@ class RedSocial{
     EN ESPAÑOL:
     - Todos los ids en 'ids' tienen una entrada correspondiente en 'users', 'amigos' y 'conocidos'
     - Para cada id en users, existe una entrada inversa en alias_to_id
+    - Todos los alias son únicos, no vacíos y tienen como máximo 200 caracteres
     - Las relaciones de amistad son simétricas: si B está en amigos[A], entonces A está en amigos[B]
     - Los conocidos de un usuario U son aquellos usuarios V tales que existe un usuario W donde:
       W está en amigos[U], V está en amigos[W], y V NO está en amigos[U]
     - amistades_count es igual a la suma de |amigos[id]| / 2 para todo id en ids
     - id_mas_popular es -1 si no hay usuarios, o es un id en ids que tiene la máxima cantidad de amigos
+    - it_conocidos_mas_popular apunta a los conocidos del usuario más popular si existe, sino a conocidos.end()
     - Ningún usuario es amigo de sí mismo
     - Ningún usuario es conocido de sí mismo
     
@@ -60,6 +62,8 @@ class RedSocial{
     (∀id : int) id ∈ ids ⟺ (id ∈ claves(users) ∧ id ∈ claves(amigos) ∧ id ∈ claves(conocidos))
     
     (∀id : int) id ∈ claves(users) ⟹ users[id] ∈ claves(alias_to_id) ∧ alias_to_id[users[id]] = id
+    
+    (∀alias : string) alias ∈ claves(alias_to_id) ⟹ (alias ≠ "" ∧ |alias| ≤ 200)
     
     (∀id_A, id_B : int) id_A ∈ ids ∧ id_B ∈ ids ⟹ 
         (users[id_B] ∈ amigos[id_A] ⟺ users[id_A] ∈ amigos[id_B])
@@ -77,6 +81,9 @@ class RedSocial{
     (ids = ∅ ⟹ id_mas_popular = -1) ∧
     (ids ≠ ∅ ⟹ id_mas_popular ∈ ids ∧ 
         (∀id : int) id ∈ ids ⟹ |amigos[id_mas_popular]| ≥ |amigos[id]|)
+    
+    (id_mas_popular = -1 ⟹ it_conocidos_mas_popular = conocidos.end()) ∧
+    (id_mas_popular ≠ -1 ⟹ esValido(it_conocidos_mas_popular) ∧ clave(it_conocidos_mas_popular) = id_mas_popular)
     
     (∀id : int) id ∈ ids ⟹ users[id] ∉ amigos[id]
     
